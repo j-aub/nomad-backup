@@ -67,10 +67,7 @@ def main():
     logger.info(f'FORGET_KEEP_MONTHLY = {config.FORGET_KEEP_MONTHLY}')
     logger.info(f'FORGET_KEEP_YEARLY = {config.FORGET_KEEP_YEARLY}')
 
-    # if a job is pending it means any moment it could start up so we'll be
-    # cautious
-    initially_running = nomad.job_status() == 'running' or
-    nomad.job_status() == 'pending'
+    initially_running = nomad.job_status() == 'running'
 
     if config.MUST_RUN and not initially_running:
         logger.error('job is not initially running when it should be.')
@@ -83,20 +80,22 @@ def main():
         if not run_hook():
             sys.exit(1)
 
-    if config.STOP_JOB and initially_running:
+    '''
+    if not backup.backup():
+        logger.error('failed to backup.')
+        sys.exit(1)
+
+    if config.FORGET:
+        if not backup.forget():
+            logger.error('failed to clean snapshots.')
+            sys.exit(1)
+    '''
+
+    # it's possible that the job is already stopped but it doesn't hurt to
+    # double stop
+    if config.STOP_JOB:
         if not nomad.stop_job():
             sys.exit(1)
 
     if config.STOP_JOB and initially_running:
         nomad.start_job()
-
-'''
-if not backup.backup():
-    logger.error('failed to backup.')
-    sys.exit(1)
-
-if config.FORGET:
-    if not backup.forget():
-        logger.error('failed to clean snapshots.')
-        sys.exit(1)
-'''
