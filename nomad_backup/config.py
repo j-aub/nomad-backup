@@ -7,6 +7,13 @@ if not JOB:
 
 # path of the restic repository
 REPOSITORY: str = os.getenv('REPOSITORY', '/repository')
+PASSWORD_FILE: str = os.getenv('PASSWORD_FILE')
+if not PASSWORD_FILE:
+    # default to /secrets/password_file in nomad
+    if os.getenv('NOMAD_SECRETS_DIR'):
+        HOOK_PATH: str = os.getenv('NOMAD_SECRETS_DIR') + '/password_file'
+    else:
+        raise ValueError('PASSWORD_FILE must be set.')
 # the dir we're backing up
 BACKUP_PATH: str = os.getenv('BACKUP_PATH', '/backup')
 
@@ -31,12 +38,9 @@ if not HOOK_PATH:
     elif HOOK:
         raise ValueError('If a hook is used HOOK_PATH must be set.')
 
-# remove old snapshots
+# remove & prune old snapshots
 _FORGET: str = os.getenv('FORGET', 'true')
 FORGET: bool = True if _FORGET.lower() == 'true' else False
-# do we run the prune command after removing snapshots
-_FORGET_PRUNE: str = os.getenv('FORGET_PRUNE', 'true')
-FORGET_PRUNE: bool = True if _FORGET_PRUNE.lower() == 'true' else False
 # policy for forget
 try:
     FORGET_KEEP_LAST: int = int(os.getenv('FORGET_KEEP_LAST', '-1'))

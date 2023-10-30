@@ -5,8 +5,27 @@ import urllib3
 
 from nomad_backup import config
 from nomad_backup import nomad
+from nomad_backup import backup
 
 logger = logging.getLogger(__name__)
+
+def print_config():
+    # printing the config
+    logger.info(f'JOB = {config.JOB}')
+    logger.info(f'REPOSITORY = {config.REPOSITORY}')
+    logger.info(f'PASSWORD_FILE = {config.PASSWORD_FILE}')
+    logger.info(f'BACKUP_PATH = {config.BACKUP_PATH}')
+    logger.info(f'MUST_RUN = {config.MUST_RUN}')
+    logger.info(f'STOP_JOB = {config.STOP_JOB}')
+    logger.info(f'HOOK = {config.HOOK}')
+    logger.info(f'HOOK_PATH = {config.HOOK_PATH if config.HOOK_PATH else ""}')
+    logger.info(f'FORGET = {config.FORGET}')
+    logger.info(f'FORGET_KEEP_LAST = {config.FORGET_KEEP_LAST}')
+    logger.info(f'FORGET_KEEP_HOURLY = {config.FORGET_KEEP_HOURLY}')
+    logger.info(f'FORGET_KEEP_DAILY = {config.FORGET_KEEP_DAILY}')
+    logger.info(f'FORGET_KEEP_WEEKLY = {config.FORGET_KEEP_WEEKLY}')
+    logger.info(f'FORGET_KEEP_MONTHLY = {config.FORGET_KEEP_MONTHLY}')
+    logger.info(f'FORGET_KEEP_YEARLY = {config.FORGET_KEEP_YEARLY}')
 
 def configure_logging():
     # https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
@@ -23,6 +42,8 @@ def configure_logging():
 
 def run_hook():
     success = False
+
+    logger.info('Running hook.')
 
     try:
         subprocess.run([config.HOOK_PATH], check=True)
@@ -49,23 +70,10 @@ def main():
     urllib3.disable_warnings()
 
     configure_logging()
+    print_config()
 
-    # printing the config
-    logger.info(f'JOB = {config.JOB}')
-    logger.info(f'REPOSITORY = {config.REPOSITORY}')
-    logger.info(f'BACKUP_PATH = {config.BACKUP_PATH}')
-    logger.info(f'MUST_RUN = {config.MUST_RUN}')
-    logger.info(f'STOP_JOB = {config.STOP_JOB}')
-    logger.info(f'HOOK = {config.HOOK}')
-    logger.info(f'HOOK_PATH = {config.HOOK_PATH if config.HOOK_PATH else ""}')
-    logger.info(f'FORGET = {config.FORGET}')
-    logger.info(f'FORGET_PRUNE = {config.FORGET_PRUNE}')
-    logger.info(f'FORGET_KEEP_LAST = {config.FORGET_KEEP_LAST}')
-    logger.info(f'FORGET_KEEP_HOURLY = {config.FORGET_KEEP_HOURLY}')
-    logger.info(f'FORGET_KEEP_DAILY = {config.FORGET_KEEP_DAILY}')
-    logger.info(f'FORGET_KEEP_WEEKLY = {config.FORGET_KEEP_WEEKLY}')
-    logger.info(f'FORGET_KEEP_MONTHLY = {config.FORGET_KEEP_MONTHLY}')
-    logger.info(f'FORGET_KEEP_YEARLY = {config.FORGET_KEEP_YEARLY}')
+    # create the restic repo if it doesn't already exist
+    backup.init()
 
     initially_running = nomad.job_status() == 'running'
 
@@ -74,27 +82,21 @@ def main():
         sys.exit(1)
 
     if config.HOOK:
-        logger.info('Running hook.')
-
         # doesn't make sense to go on if hook failed
         if not run_hook():
             sys.exit(1)
-
-    '''
-    if not backup.backup():
-        logger.error('failed to backup.')
-        sys.exit(1)
-
-    if config.FORGET:
-        if not backup.forget():
-            logger.error('failed to clean snapshots.')
-            sys.exit(1)
-    '''
 
     # it's possible that the job is already stopped but it doesn't hurt to
     # double stop
     if config.STOP_JOB:
         if not nomad.stop_job():
+            sys.exit(1)
+
+    if not backup.backup():
+        sys.exit(1)
+
+    if config.FORGET:
+        if not backup.forget():
             sys.exit(1)
 
     if config.STOP_JOB and initially_running:
