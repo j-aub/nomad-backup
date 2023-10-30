@@ -95,9 +95,10 @@ def main():
     if not backup.backup():
         sys.exit(1)
 
+    # start job before performing the forget to minimize downtime
+    if config.STOP_JOB and initially_running:
+        nomad.start_job()
+
     if config.FORGET:
         if not backup.forget():
             sys.exit(1)
-
-    if config.STOP_JOB and initially_running:
-        nomad.start_job()
