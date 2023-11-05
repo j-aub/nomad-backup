@@ -9,3 +9,6 @@ https://github.com/djmaze/resticker/blob/master/Dockerfile
 
 use this lib:
 https://github.com/mtlynch/resticpy
+
+to create requirements use 
+poetry export -f requirements.txt -o requirements.txt

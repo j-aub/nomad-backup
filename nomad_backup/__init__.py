@@ -73,9 +73,12 @@ def main():
     print_config()
 
     # create the restic repo if it doesn't already exist
-    backup.init()
+    if not backup.init():
+        sys.exit(1)
 
-    initially_running = nomad.job_status() == 'running'
+    # we only need to query job status in some cases
+    if config.MUST_RUN or config.STOP_JOB:
+        initially_running = nomad.job_status() == 'running'
 
     if config.MUST_RUN and not initially_running:
         logger.error('job is not initially running when it should be.')

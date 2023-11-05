@@ -24,7 +24,8 @@ def stop_job():
     job = nomad.job[config.JOB]
 
     logger.info('stopping job.')
-    stop = nomad.job.deregister_job(config.JOB)
+    if job_status() == 'running':
+        nomad.job.deregister_job(config.JOB)
 
     # job kill timeout is 30s so we'll sleep
     # 1,2,4,8,16 giving 31 seconds
@@ -38,7 +39,7 @@ def stop_job():
     # check the status
     final_status = job_status()
     if not final_status == 'dead':
-        logger.error('failed to stop the job! job eval status is {final_status}')
+        logger.error(f'failed to stop the job! job status is {final_status}')
     else:
         logger.info('job has stopped.')
         success = True
