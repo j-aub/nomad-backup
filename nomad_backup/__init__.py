@@ -2,6 +2,7 @@ import sys
 import logging
 import subprocess
 import urllib3
+import os
 
 from nomad_backup import config
 from nomad_backup import nomad
@@ -72,8 +73,13 @@ def main():
     configure_logging()
     print_config()
 
+    # otherwise backups will be using full path which we don't want
+    # also make script writing easier
+    os.chdir(config.BACKUP_PATH)
+
     # create the restic repo if it doesn't already exist
     if not backup.init():
+        logger.error('failed to create repository.')
         sys.exit(1)
 
     # we only need to query job status in some cases
@@ -87,12 +93,14 @@ def main():
     if config.HOOK:
         # doesn't make sense to go on if hook failed
         if not run_hook():
+            logger.error('failed to run hook.')
             sys.exit(1)
 
     # it's possible that the job is already stopped but it doesn't hurt to
     # double stop
     if config.STOP_JOB:
         if not nomad.stop_job():
+            logger.error('failed to stop job.')
             sys.exit(1)
 
     if not backup.backup():
@@ -104,4 +112,5 @@ def main():
 
     if config.FORGET:
         if not backup.forget():
+            logger.error('failed to forget.')
             sys.exit(1)

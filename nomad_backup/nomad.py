@@ -1,11 +1,13 @@
 import logging
 import time
 import nomad
+import requests_unixsocket
 
 from nomad_backup import config
 
 logger = logging.getLogger(__name__)
-nomad = nomad.Nomad()
+# use requests_unixsocket
+nomad = nomad.Nomad(session=requests_unixsocket.Session())
 
 # https://developer.hashicorp.com/nomad/api-docs/jobs
 # pending, running, dead

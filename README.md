@@ -12,3 +12,7 @@ https://github.com/mtlynch/resticpy
 
 to create requirements use 
 poetry export -f requirements.txt -o requirements.txt
+
+building
+
+docker build . -t jaub/nomad-backup:version

@@ -11,7 +11,7 @@ PASSWORD_FILE: str = os.getenv('PASSWORD_FILE')
 if not PASSWORD_FILE:
     # default to /secrets/password_file in nomad
     if os.getenv('NOMAD_SECRETS_DIR'):
-        HOOK_PATH: str = os.getenv('NOMAD_SECRETS_DIR') + '/password_file'
+        PASSWORD_FILE: str = os.getenv('NOMAD_SECRETS_DIR') + '/password_file'
     else:
         raise ValueError('PASSWORD_FILE must be set.')
 # the dir we're backing up
@@ -31,9 +31,9 @@ _HOOK: str = os.getenv('HOOK', 'false')
 HOOK: bool = True if _HOOK.lower() == 'true' else False
 HOOK_PATH: str = os.getenv('HOOK_PATH')
 if not HOOK_PATH:
-    # default to /secrets/hook in nomad
-    if os.getenv('NOMAD_SECRETS_DIR'):
-        HOOK_PATH: str = os.getenv('NOMAD_SECRETS_DIR') + '/hook'
+    # default to /local/hook in nomad
+    if os.getenv('NOMAD_TASK_DIR'):
+        HOOK_PATH: str = os.getenv('NOMAD_TASK_DIR') + '/hook'
     # we can't run the hook if it's path isn't specified
     elif HOOK:
         raise ValueError('If a hook is used HOOK_PATH must be set.')

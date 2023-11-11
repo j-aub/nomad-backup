@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 # wrong
 restic.repository = config.REPOSITORY
 restic.password_file = config.PASSWORD_FILE
+# in docker this doesn't make sense
+restic.use_cache = False
 
 # log_backup_result & helpers from https://github.com/mtlynch/mtlynch-backup/
 def human_size(bytes, units=[' bytes', ' KB', ' MB', ' GB', ' TB']):
@@ -40,10 +42,9 @@ def init():
     try:
         if not os.path.isfile(os.path.join(config.REPOSITORY, 'config')):
             restic.init()
+        success = True
     except restic.errors.ResticFailedError as e:
         logger.error(f'repository creation failed: {e}')
-    else:
-        sucess = True
 
     return success
 
@@ -52,8 +53,6 @@ def backup():
 
     logger.info('backing up.')
 
-    # otherwise backups will be using full path which we don't want
-    os.chdir(config.BACKUP_PATH)
     try:
         res = restic.backup(paths=['.'])
         log_backup_result(res)
