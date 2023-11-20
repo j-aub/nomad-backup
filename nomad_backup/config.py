@@ -39,7 +39,7 @@ if not HOOK_PATH:
         raise ValueError('If a hook is used HOOK_PATH must be set.')
 
 # remove & prune old snapshots
-_FORGET: str = os.getenv('FORGET', 'true')
+_FORGET: str = os.getenv('FORGET', 'false')
 FORGET: bool = True if _FORGET.lower() == 'true' else False
 # policy for forget
 try:

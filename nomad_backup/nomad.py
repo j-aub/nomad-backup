@@ -1,13 +1,18 @@
 import logging
-import time
 import nomad
+import os
 import requests_unixsocket
+import time
 
 from nomad_backup import config
 
 logger = logging.getLogger(__name__)
 # use requests_unixsocket
-nomad = nomad.Nomad(session=requests_unixsocket.Session())
+# if we're running under nomad use the socket by default
+nomad = nomad.Nomad(session=requests_unixsocket.Session(),
+                    address=("http+unix://%2Fsecrets%2Fapi.sock" if not
+                             os.getenv("NOMAD_ADDR") and
+                        os.getenv("NOMAD_SECRETS_DIR") else None))
 
 # https://developer.hashicorp.com/nomad/api-docs/jobs
 # pending, running, dead
