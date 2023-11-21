@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 nomad = nomad.Nomad(session=requests_unixsocket.Session(),
                     address=("http+unix://%2Fsecrets%2Fapi.sock" if not
                              os.getenv("NOMAD_ADDR") and
-                        os.getenv("NOMAD_SECRETS_DIR") else None))
+                        os.getenv("NOMAD_SECRETS_DIR") else
+                        os.getenv("NOMAD_ADDR")))
 
 # https://developer.hashicorp.com/nomad/api-docs/jobs
 # pending, running, dead
