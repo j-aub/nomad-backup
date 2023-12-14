@@ -72,6 +72,9 @@ def forget():
         restic.forget(
                 # if we're not gonna prune nobody will
                 prune = True,
+                # otherwise restic will never forget because each docker
+                # container has a unique hostname
+                group_by = 'paths',
                 keep_last = config.FORGET_KEEP_LAST,
                 keep_hourly = config.FORGET_KEEP_HOURLY,
                 keep_daily = config.FORGET_KEEP_DAILY,
