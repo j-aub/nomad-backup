@@ -3,6 +3,10 @@ FROM python:3.12-alpine
 ARG RESTIC_VERSION=0.16.0
 ARG RESTIC_CHECKSUM=sha256:492387572bb2c4de904fa400636e05492e7200b331335743d46f2f2874150162
 
+LABEL org.opencontainers.image.source=https://github.com/j-aub/nomad-backup
+# LABEL org.opencontainers.image.description=""
+LABEL org.opencontainers.image.licenses=GPL-3.0-or-later
+
 # some utilities for writing hooks
 RUN apk --no-cache add -f \
 	coreutils \
