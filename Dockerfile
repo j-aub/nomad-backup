@@ -22,15 +22,14 @@ WORKDIR /usr/local/bin
 ADD --checksum=${RESTIC_SHA256} https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic_${RESTIC_VERSION}_linux_amd64.bz2 restic.bz2
 
 RUN bzip2 -d restic.bz2 && \
-	chmod +x restic
+	chmod '0755' restic
 
 # app install
 WORKDIR /app
 
 COPY requirements.txt .
 
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
-RUN rm requirements.txt
+RUN python3 -m pip install --no-cache-dir -r requirements.txt && rm requirements.txt
 
 COPY nomad_backup ./nomad_backup
 
